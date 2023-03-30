@@ -7,8 +7,8 @@
 
         public string Name { get; set; }
 
-        public string ShortName { get; set; }
+        public string CountryCode { get; set; }
 
-        public IList<Hotel> Hotels { get; set; }
+        public virtual IList<Hotel> Hotels { get; set; }
     }
 }
