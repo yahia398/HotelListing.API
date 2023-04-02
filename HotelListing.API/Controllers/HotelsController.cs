@@ -14,9 +14,9 @@ namespace HotelListing.API.Controllers
     [ApiController]
     public class HotelsController : ControllerBase
     {
-        private readonly HotelListingDbContext _context;
+        private readonly AppDbContext _context;
 
-        public HotelsController(HotelListingDbContext context)
+        public HotelsController(AppDbContext context)
         {
             _context = context;
         }

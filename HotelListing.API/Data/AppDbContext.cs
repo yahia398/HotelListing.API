@@ -4,9 +4,9 @@ using System.Reflection;
 
 namespace HotelListing.API.Data
 {
-    public class HotelListingDbContext : DbContext
+    public class AppDbContext : DbContext
     {
-        public HotelListingDbContext(DbContextOptions options) : base(options)
+        public AppDbContext(DbContextOptions options) : base(options)
         {
         }
 

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HotelListing.API.Migrations
 {
-    [DbContext(typeof(HotelListingDbContext))]
+    [DbContext(typeof(AppDbContext))]
     [Migration("20230330202600_SeedingCountiresTable")]
     partial class SeedingCountiresTable
     {
