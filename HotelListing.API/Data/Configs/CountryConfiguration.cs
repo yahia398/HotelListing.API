@@ -18,7 +18,6 @@ namespace HotelListing.API.Data.Configs
             builder.Property(p => p.CountryCode).HasColumnType("varchar(10)");
 
 
-            builder.Ignore(p => p.Hotels);
 
             builder.HasData(
                 new Country

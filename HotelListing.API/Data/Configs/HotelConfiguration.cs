@@ -27,7 +27,6 @@ namespace HotelListing.API.Data.Configs
             builder.Property(p => p.Address).HasColumnType("nvarchar(200)");
 
 
-            builder.Ignore(p => p.Country);
 
             builder.HasData(
                 new Hotel

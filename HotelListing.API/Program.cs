@@ -38,6 +38,7 @@ namespace HotelListing.API
             builder.Services.AddAutoMapper(typeof(MapperConfiguration));
 
             builder.Services.AddScoped<ICountryRepository, CountryRepository>();
+            builder.Services.AddScoped<IHotelRepository, HotelRepository>();
 
             var app = builder.Build();
 

@@ -56,7 +56,7 @@ namespace HotelListing.API.Repository
             catch (Exception ex)
             {
 
-                throw new InvalidOperationException("Error saving changes to database", ex);
+                throw new InvalidOperationException("Error during saving changes to the database", ex);
             }
         }
 

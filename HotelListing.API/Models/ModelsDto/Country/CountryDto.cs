@@ -8,4 +8,5 @@ namespace HotelListing.API.Models.ModelsDto.Country
 
         public virtual IList<CountryHotelsDto>? Hotels { get; set; }
     }
+
 }
