@@ -2,6 +2,7 @@ using HotelListing.API.Data;
 using HotelListing.API.Data.Configs;
 using HotelListing.API.Repository;
 using HotelListing.API.Repository.IRepository;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -19,6 +20,10 @@ namespace HotelListing.API
                     builder.Configuration.GetConnectionString("HotelListingDbConnectionString")
                 )
             );
+
+            builder.Services.AddIdentityCore<ApiUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
