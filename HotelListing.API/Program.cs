@@ -1,3 +1,4 @@
+using HotelListing.API.Contracts;
 using HotelListing.API.Data;
 using HotelListing.API.Data.Configs;
 using HotelListing.API.Models;
@@ -45,6 +46,7 @@ namespace HotelListing.API
 
             builder.Services.AddScoped<ICountryRepository, CountryRepository>();
             builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+            builder.Services.AddScoped<IAuthManager, AuthManager>();
 
             var app = builder.Build();
 
