@@ -3,6 +3,11 @@ using HotelListing.API.Contracts;
 using HotelListing.API.Models;
 using HotelListing.API.Models.ModelsDto.ApiUser;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
 
 namespace HotelListing.API.Repository
 {
@@ -10,30 +15,31 @@ namespace HotelListing.API.Repository
     {
         private readonly IMapper _mapper;
         private readonly UserManager<ApiUser> _userManager;
+        private readonly IConfiguration _config;
 
-        public AuthManager(IMapper mapper, UserManager<ApiUser> userManager)
+        public AuthManager(IMapper mapper, UserManager<ApiUser> userManager, IConfiguration config)
         {
             _mapper = mapper;
             _userManager = userManager;
+            _config = config;
         }
 
-        public async Task<bool> LoginAsync(LoginDto loginDto)
+        public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
-
-            if (user == null)
-            {
-                return false;
-            }
-
             bool isValidUser = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
-            if (!isValidUser)
+            if (user == null || !isValidUser)
             {
-                return false;
+                return null;
             }
 
-            return true;
+            var token = await GenerateTokenAsync(user);
+            return new AuthResponseDto
+            {
+                Token = token,
+                UserId = user.Id
+            };
         }
 
         public async Task<IEnumerable<IdentityError>> RegisterAsync(ApiUserDto apiUserDto)
@@ -48,6 +54,42 @@ namespace HotelListing.API.Repository
             }
 
             return result.Errors;
+        }
+
+        private async Task<string> GenerateTokenAsync(ApiUser user)
+        {
+            // Create the Key
+            var securityKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["JwtSettings:Key"])
+            );
+
+            // Create Credentials
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            // Get the roles that the user has (Admin .. User)
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var roleClaims = roles.Select(x => new Claim(ClaimTypes.Role, x)).ToList();
+            var userClaims = await _userManager.GetClaimsAsync(user);
+
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim("UserId", user.Id)
+
+            }.Union(roleClaims).Union(userClaims);
+
+            var token = new JwtSecurityToken(
+                issuer: _config["JwtSettings:Issuer"],
+                audience: _config["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:DurationInMinutes"])),
+                signingCredentials: credentials
+                );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

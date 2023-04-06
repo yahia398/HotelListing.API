@@ -44,12 +44,12 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            var isValidUser = await _authManager.LoginAsync(loginDto);
+            var authResponse = await _authManager.LoginAsync(loginDto);
 
-            if (!isValidUser)
+            if (authResponse == null)
                 return Unauthorized();
 
-            return Ok();
+            return Ok(authResponse);
         }
     }
 }
