@@ -15,26 +15,29 @@ namespace HotelListing.API.Repository
     {
         private readonly IMapper _mapper;
         private readonly UserManager<ApiUser> _userManager;
-        private readonly IConfiguration _config;
+        private readonly ITokenGenerator _tokenGenerator;
 
-        public AuthManager(IMapper mapper, UserManager<ApiUser> userManager, IConfiguration config)
+        public AuthManager(IMapper mapper, 
+            UserManager<ApiUser> userManager, 
+            ITokenGenerator tokenGenerator)
         {
             _mapper = mapper;
             _userManager = userManager;
-            _config = config;
+            _tokenGenerator = tokenGenerator;
         }
 
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if(user == null)
+                return null;
+
             bool isValidUser = await _userManager.CheckPasswordAsync(user, loginDto.Password);
 
-            if (user == null || !isValidUser)
-            {
+            if (!isValidUser)
                 return null;
-            }
 
-            var token = await GenerateTokenAsync(user);
+            var token = await _tokenGenerator.GenerateTokenAsync(user);
             return new AuthResponseDto
             {
                 Token = token,
@@ -56,40 +59,40 @@ namespace HotelListing.API.Repository
             return result.Errors;
         }
 
-        private async Task<string> GenerateTokenAsync(ApiUser user)
-        {
-            // Create the Key
-            var securityKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["JwtSettings:Key"])
-            );
+        //private async Task<string> GenerateTokenAsync(ApiUser user)
+        //{
+        //    // Create the Key
+        //    var securityKey = new SymmetricSecurityKey(
+        //        Encoding.UTF8.GetBytes(_config["JwtSettings:Key"])
+        //    );
 
-            // Create Credentials
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+        //    // Create Credentials
+        //    var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            // Get the roles that the user has (Admin .. User)
-            var roles = await _userManager.GetRolesAsync(user);
+        //    // Get the roles that the user has (Admin .. User)
+        //    var roles = await _userManager.GetRolesAsync(user);
 
-            var roleClaims = roles.Select(x => new Claim(ClaimTypes.Role, x)).ToList();
-            var userClaims = await _userManager.GetClaimsAsync(user);
+        //    var roleClaims = roles.Select(x => new Claim(ClaimTypes.Role, x)).ToList();
+        //    var userClaims = await _userManager.GetClaimsAsync(user);
 
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("UserId", user.Id)
+        //    var claims = new List<Claim>
+        //    {
+        //        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+        //        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        //        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+        //        new Claim("UserId", user.Id)
 
-            }.Union(roleClaims).Union(userClaims);
+        //    }.Union(roleClaims).Union(userClaims);
 
-            var token = new JwtSecurityToken(
-                issuer: _config["JwtSettings:Issuer"],
-                audience: _config["JwtSettings:Audience"],
-                claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:DurationInMinutes"])),
-                signingCredentials: credentials
-                );
+        //    var token = new JwtSecurityToken(
+        //        issuer: _config["JwtSettings:Issuer"],
+        //        audience: _config["JwtSettings:Audience"],
+        //        claims: claims,
+        //        expires: DateTime.Now.AddMinutes(Convert.ToInt32(_config["JwtSettings:DurationInMinutes"])),
+        //        signingCredentials: credentials
+        //        );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        //    return new JwtSecurityTokenHandler().WriteToken(token);
+        //}
     }
 }

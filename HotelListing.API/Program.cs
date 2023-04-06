@@ -51,6 +51,7 @@ namespace HotelListing.API
             builder.Services.AddScoped<ICountryRepository, CountryRepository>();
             builder.Services.AddScoped<IHotelRepository, HotelRepository>();
             builder.Services.AddScoped<IAuthManager, AuthManager>();
+            builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 
             builder.Services.AddAuthentication(options =>
             {
