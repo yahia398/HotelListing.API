@@ -59,6 +59,20 @@ namespace HotelListing.API.Repository
             return result.Errors;
         }
 
+        public async Task<IEnumerable<IdentityError>> RegisterAdminAsync(ApiUserDto apiUserDto)
+        {
+            var user = _mapper.Map<ApiUser>(apiUserDto);
+
+            var result = await _userManager.CreateAsync(user, apiUserDto.Password);
+
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, "Admin");
+            }
+
+            return result.Errors;
+        }
+
         //private async Task<string> GenerateTokenAsync(ApiUser user)
         //{
         //    // Create the Key

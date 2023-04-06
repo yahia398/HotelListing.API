@@ -89,6 +89,8 @@ namespace HotelListing.API
 
             app.UseCors("AllowAll");
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
 
