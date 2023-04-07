@@ -29,7 +29,9 @@ namespace HotelListing.API
 
             builder.Services.AddIdentityCore<ApiUser>()
                 .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>();
+                .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("HotelListingApi")
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddDefaultTokenProviders();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -51,6 +53,7 @@ namespace HotelListing.API
             builder.Services.AddScoped<ICountryRepository, CountryRepository>();
             builder.Services.AddScoped<IHotelRepository, HotelRepository>();
             builder.Services.AddScoped<IAuthManager, AuthManager>();
+            builder.Services.AddScoped<ITokenGenerator, TokenGenerator>();
 
             builder.Services.AddAuthentication(options =>
             {
@@ -87,6 +90,8 @@ namespace HotelListing.API
             app.UseRouting();
 
             app.UseCors("AllowAll");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
