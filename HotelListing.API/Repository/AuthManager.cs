@@ -16,6 +16,10 @@ namespace HotelListing.API.Repository
         private readonly IMapper _mapper;
         private readonly UserManager<ApiUser> _userManager;
         private readonly ITokenGenerator _tokenGenerator;
+        private ApiUser? _user;
+
+        private const string LOGIN_PROVIDER = "HotelListngApi";
+        private const string REFRESH_TOKEN = "RefreshToken";
 
         public AuthManager(IMapper mapper, 
             UserManager<ApiUser> userManager, 
@@ -28,32 +32,32 @@ namespace HotelListing.API.Repository
 
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
-            if(user == null)
+            var _user = await _userManager.FindByEmailAsync(loginDto.Email);
+            if(_user == null)
                 return null;
 
-            bool isValidUser = await _userManager.CheckPasswordAsync(user, loginDto.Password);
+            bool isValidUser = await _userManager.CheckPasswordAsync(_user, loginDto.Password);
 
             if (!isValidUser)
                 return null;
 
-            var token = await _tokenGenerator.GenerateTokenAsync(user);
+            var token = await _tokenGenerator.GenerateTokenAsync(_user);
             return new AuthResponseDto
             {
                 Token = token,
-                UserId = user.Id
+                UserId = _user.Id
             };
         }
 
         public async Task<IEnumerable<IdentityError>> RegisterAsync(ApiUserDto apiUserDto)
         {
-            var user = _mapper.Map<ApiUser>(apiUserDto);
+            var _user = _mapper.Map<ApiUser>(apiUserDto);
 
-            var result = await _userManager.CreateAsync(user, apiUserDto.Password);
+            var result = await _userManager.CreateAsync(_user, apiUserDto.Password);
 
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, "User");
+                await _userManager.AddToRoleAsync(_user, "User");
             }
 
             return result.Errors;
@@ -61,16 +65,58 @@ namespace HotelListing.API.Repository
 
         public async Task<IEnumerable<IdentityError>> RegisterAdminAsync(ApiUserDto apiUserDto)
         {
-            var user = _mapper.Map<ApiUser>(apiUserDto);
+            var _user = _mapper.Map<ApiUser>(apiUserDto);
 
-            var result = await _userManager.CreateAsync(user, apiUserDto.Password);
+            var result = await _userManager.CreateAsync(_user, apiUserDto.Password);
 
             if (result.Succeeded)
             {
-                await _userManager.AddToRoleAsync(user, "Admin");
+                await _userManager.AddToRoleAsync(_user, "Admin");
             }
 
             return result.Errors;
+        }
+
+        public async Task<string> CreateRefreshToken()
+        {
+            await _userManager.RemoveAuthenticationTokenAsync(_user,
+                LOGIN_PROVIDER, REFRESH_TOKEN);
+
+            var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user,
+                LOGIN_PROVIDER, REFRESH_TOKEN);
+
+            var result = await _userManager.SetAuthenticationTokenAsync(_user,
+                LOGIN_PROVIDER, REFRESH_TOKEN, newRefreshToken);
+
+            return newRefreshToken;
+        }
+
+        public async Task<AuthResponseDto> VerifyRefreshToken(AuthResponseDto request)
+        {
+            var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+            var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(request.Token);
+            var username = tokenContent.Claims.ToList()
+                .FirstOrDefault(q => q.Type == JwtRegisteredClaimNames.Email)?.Value;
+            _user = await _userManager.FindByNameAsync(username);
+
+            if(_user == null || _user.Id != request.UserId)
+            {
+                return null;
+            }
+            var isValidRefreshToken = await _userManager
+                .VerifyUserTokenAsync(_user, LOGIN_PROVIDER, REFRESH_TOKEN, request.RefreshToken);
+            if (isValidRefreshToken)
+            {
+                var token = await _tokenGenerator.GenerateTokenAsync(_user);
+                return new AuthResponseDto
+                {
+                    Token = token,
+                    UserId = _user.Id,
+                    RefreshToken = await CreateRefreshToken()
+                };
+            }
+            await _userManager.UpdateSecurityStampAsync(_user);
+            return null;
         }
 
         //private async Task<string> GenerateTokenAsync(ApiUser user)
