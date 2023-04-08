@@ -16,29 +16,45 @@ namespace HotelListing.API.Repository
         private readonly IMapper _mapper;
         private readonly UserManager<ApiUser> _userManager;
         private readonly ITokenGenerator _tokenGenerator;
+        private readonly ILogger<AuthManager> _logger;
         private ApiUser? _user;
 
         public AuthManager(IMapper mapper, 
             UserManager<ApiUser> userManager, 
-            ITokenGenerator tokenGenerator)
+            ITokenGenerator tokenGenerator,
+            ILogger<AuthManager> logger)
         {
             _mapper = mapper;
             _userManager = userManager;
             _tokenGenerator = tokenGenerator;
+            _logger = logger;
         }
 
         public async Task<AuthResponseDto?> LoginAsync(LoginDto loginDto)
         {
+            _logger.LogInformation($"Attempting to log in user with email: {loginDto.Email}", loginDto.Email);
+
             var _user = await _userManager.FindByEmailAsync(loginDto.Email);
             if(_user == null)
+            {
+                _logger.LogWarning($"User with email {loginDto.Email} not found during login attempt", loginDto.Email);
                 return null;
+            }
+
+            _logger.LogInformation($"User with email {loginDto.Email} found during login attempt", loginDto.Email);
 
             bool isValidUser = await _userManager.CheckPasswordAsync(_user, loginDto.Password);
 
             if (!isValidUser)
+            {
+                _logger.LogWarning($"Incorrect password entered for user with email {loginDto.Email}", loginDto.Email);
                 return null;
+            }
 
             var token = await _tokenGenerator.GenerateTokenAsync(_user);
+
+            _logger.LogInformation($"User with email {loginDto.Email} successfully authenticated during login attempt with token {token}", loginDto.Email);
+
             return new AuthResponseDto
             {
                 Token = token,
