@@ -18,9 +18,6 @@ namespace HotelListing.API.Repository
         private readonly ITokenGenerator _tokenGenerator;
         private ApiUser? _user;
 
-        private const string LOGIN_PROVIDER = "HotelListngApi";
-        private const string REFRESH_TOKEN = "RefreshToken";
-
         public AuthManager(IMapper mapper, 
             UserManager<ApiUser> userManager, 
             ITokenGenerator tokenGenerator)
@@ -45,7 +42,8 @@ namespace HotelListing.API.Repository
             return new AuthResponseDto
             {
                 Token = token,
-                UserId = _user.Id
+                UserId = _user.Id,
+                RefreshToken = await CreateRefreshToken()
             };
         }
 
@@ -80,13 +78,13 @@ namespace HotelListing.API.Repository
         public async Task<string> CreateRefreshToken()
         {
             await _userManager.RemoveAuthenticationTokenAsync(_user,
-                LOGIN_PROVIDER, REFRESH_TOKEN);
+                SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN);
 
             var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user,
-                LOGIN_PROVIDER, REFRESH_TOKEN);
+                SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN);
 
-            var result = await _userManager.SetAuthenticationTokenAsync(_user,
-                LOGIN_PROVIDER, REFRESH_TOKEN, newRefreshToken);
+            await _userManager.SetAuthenticationTokenAsync(_user,
+                SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN, newRefreshToken);
 
             return newRefreshToken;
         }
@@ -104,7 +102,7 @@ namespace HotelListing.API.Repository
                 return null;
             }
             var isValidRefreshToken = await _userManager
-                .VerifyUserTokenAsync(_user, LOGIN_PROVIDER, REFRESH_TOKEN, request.RefreshToken);
+                .VerifyUserTokenAsync(_user, SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN, request.RefreshToken);
             if (isValidRefreshToken)
             {
                 var token = await _tokenGenerator.GenerateTokenAsync(_user);

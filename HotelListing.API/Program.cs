@@ -29,7 +29,7 @@ namespace HotelListing.API
 
             builder.Services.AddIdentityCore<ApiUser>()
                 .AddRoles<IdentityRole>()
-                .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>("HotelListingApi")
+                .AddTokenProvider<DataProtectorTokenProvider<ApiUser>>(SD.TOKEN_PROVIDER)
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -44,9 +44,8 @@ namespace HotelListing.API
                 )
             );
 
-            builder.Host.UseSerilog((builder, loggerConfiguration) => 
-                loggerConfiguration.WriteTo.Console()
-                                .ReadFrom.Configuration(builder.Configuration));
+            builder.Host.UseSerilog((context, loggerConfiguration) =>
+                        loggerConfiguration.ReadFrom.Configuration(context.Configuration));
 
             builder.Services.AddAutoMapper(typeof(MapperConfiguration));
 
