@@ -11,12 +11,10 @@ namespace HotelListing.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IAuthManager _authManager;
-        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IAuthManager authManager, ILogger<UsersController> logger)
+        public UsersController(IAuthManager authManager)
         {
             _authManager = authManager;
-            _logger = logger;
         }
 
         [HttpPost]
@@ -26,28 +24,18 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register([FromBody] ApiUserDto apiUserDto)
         {
-            _logger.LogInformation($"Registeration attempt for {apiUserDto.Email}");
+            var errors = await _authManager.RegisterAsync(apiUserDto);
 
-            try
+            if (errors.Any())
             {
-                var errors = await _authManager.RegisterAsync(apiUserDto);
-
-                if (errors.Any())
+                foreach (var error in errors)
                 {
-                    foreach (var error in errors)
-                    {
-                        ModelState.AddModelError(error.Code, error.Description);
-                    }
-                    return BadRequest(ModelState);
+                    ModelState.AddModelError(error.Code, error.Description);
                 }
+                return BadRequest(ModelState);
+            }
 
-                return StatusCode(StatusCodes.Status201Created);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something went wrong in the {nameof(Register)} - Registeration attempt for {apiUserDto.Email}");
-                return Problem($"Something went wrong in the {nameof(Register)} - please contact the support", statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpPost]
@@ -58,29 +46,18 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> RegisterAdmin([FromBody] ApiUserDto apiUserDto)
         {
-            _logger.LogInformation($"Admin Registeration attempt for {apiUserDto.Email}");
+            var errors = await _authManager.RegisterAdminAsync(apiUserDto);
 
-            try
+            if (errors.Any())
             {
-                var errors = await _authManager.RegisterAdminAsync(apiUserDto);
-
-                if (errors.Any())
+                foreach (var error in errors)
                 {
-                    foreach (var error in errors)
-                    {
-                        ModelState.AddModelError(error.Code, error.Description);
-                    }
-                    return BadRequest(ModelState);
+                    ModelState.AddModelError(error.Code, error.Description);
                 }
-
-                return StatusCode(StatusCodes.Status201Created);
+                return BadRequest(ModelState);
             }
-            catch (Exception ex)
-            {
 
-                _logger.LogError(ex, $"Something went wrong in the {nameof(RegisterAdmin)} - Admin Registeration attempt for {apiUserDto.Email}");
-                return Problem($"Something went wrong in the {nameof(RegisterAdmin)} - please contact the support", statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return StatusCode(StatusCodes.Status201Created);
         }
 
         [HttpPost]
@@ -90,25 +67,12 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
-            _logger.LogInformation($"Login attempt for {loginDto.Email}");
+            var authResponse = await _authManager.LoginAsync(loginDto);
 
-            try
-            {
-                var authResponse = await _authManager.LoginAsync(loginDto);
+            if (authResponse == null)
+                return Unauthorized();
 
-                if (authResponse == null)
-                {
-                    _logger.LogWarning($"The login attempt was unsuccessful due to an incorrect username or password. Specifically, the {loginDto.Email} was unable to authenticate.");
-                    return Unauthorized();
-                }
-                return Ok(authResponse);
-            }
-            catch (Exception ex)
-            {
-
-                _logger.LogError(ex, $"Something went wrong in the {nameof(Login)} - Login attempt for {loginDto.Email}");
-                return Problem($"Something went wrong in the {nameof(Login)}", statusCode: StatusCodes.Status500InternalServerError);
-            }
+            return Ok(authResponse);
         }
 
         [HttpPost]
@@ -116,7 +80,7 @@ namespace HotelListing.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> RefreshToken([FromBody] AuthResponseDto request)
+        public async Task<IActionResult> RefrshToken([FromBody] AuthResponseDto request)
         {
             var authResponse = await _authManager.VerifyRefreshToken(request);
 
