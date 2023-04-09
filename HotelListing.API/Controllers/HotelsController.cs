@@ -15,8 +15,9 @@ using System.Data;
 
 namespace HotelListing.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/v{version:apiVersion}/hotels")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class HotelsController : ControllerBase
     {
         private readonly IHotelRepository _hotelRepository;
