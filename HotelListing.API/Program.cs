@@ -59,11 +59,11 @@ namespace HotelListing.API
                     );
             });
 
-            builder.Services.AddVersionedApiExplorer(options =>
-            {
-                options.GroupNameFormat = "v{0}.{1}";
-                options.SubstituteApiVersionInUrl = true;
-            });
+            //builder.Services.AddVersionedApiExplorer(options =>
+            //{
+            //    options.GroupNameFormat = "v{0}.{1}";
+            //    options.SubstituteApiVersionInUrl = true;
+            //});
 
             builder.Host.UseSerilog((context, loggerConfiguration) =>
                         loggerConfiguration.ReadFrom.Configuration(context.Configuration));
@@ -107,7 +107,7 @@ namespace HotelListing.API
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "V1"));
+                app.UseSwaggerUI();
             }
 
             app.UseSerilogRequestLogging();

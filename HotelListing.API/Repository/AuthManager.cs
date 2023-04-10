@@ -17,7 +17,6 @@ namespace HotelListing.API.Repository
         private readonly UserManager<ApiUser> _userManager;
         private readonly ITokenGenerator _tokenGenerator;
         private readonly ILogger<AuthManager> _logger;
-        private ApiUser? _user;
 
         public AuthManager(IMapper mapper, 
             UserManager<ApiUser> userManager, 
@@ -59,7 +58,7 @@ namespace HotelListing.API.Repository
             {
                 Token = token,
                 UserId = _user.Id,
-                RefreshToken = await CreateRefreshToken()
+                RefreshToken = await CreateRefreshToken(_user)
             };
         }
 
@@ -91,15 +90,15 @@ namespace HotelListing.API.Repository
             return result.Errors;
         }
 
-        public async Task<string> CreateRefreshToken()
+        public async Task<string> CreateRefreshToken(ApiUser user)
         {
-            await _userManager.RemoveAuthenticationTokenAsync(_user,
+            await _userManager.RemoveAuthenticationTokenAsync(user,
                 SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN);
 
-            var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user,
+            var newRefreshToken = await _userManager.GenerateUserTokenAsync(user,
                 SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN);
 
-            await _userManager.SetAuthenticationTokenAsync(_user,
+            await _userManager.SetAuthenticationTokenAsync(user,
                 SD.TOKEN_PROVIDER, SD.REFRESH_TOKEN, newRefreshToken);
 
             return newRefreshToken;
@@ -111,7 +110,7 @@ namespace HotelListing.API.Repository
             var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(request.Token);
             var username = tokenContent.Claims.ToList()
                 .FirstOrDefault(q => q.Type == JwtRegisteredClaimNames.Email)?.Value;
-            _user = await _userManager.FindByNameAsync(username);
+            var _user = await _userManager.FindByNameAsync(username);
 
             if(_user == null || _user.Id != request.UserId)
             {
@@ -126,7 +125,7 @@ namespace HotelListing.API.Repository
                 {
                     Token = token,
                     UserId = _user.Id,
-                    RefreshToken = await CreateRefreshToken()
+                    RefreshToken = await CreateRefreshToken(_user)
                 };
             }
             await _userManager.UpdateSecurityStampAsync(_user);

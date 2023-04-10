@@ -29,8 +29,8 @@ namespace HotelListing.API.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/Hotels
-        [HttpGet]
+        // GET: api/Hotels/GetAll
+        [HttpGet("GetAll")]
         [Authorize]
         [MapToApiVersion("1.0")]
         public async Task<ActionResult<IEnumerable<GetHotelsDto>>> GetHotels()
@@ -38,6 +38,17 @@ namespace HotelListing.API.Controllers
             var hotels = await _hotelRepository.GetAllAsync();
 
             return Ok(_mapper.Map<List<GetHotelsDto>>(hotels));
+        }
+
+        // GET: api/Hotels?PageNumber=1&PageSize=10
+        [HttpGet]
+        [Authorize]
+        [MapToApiVersion("1.0")]
+        public async Task<ActionResult<PagedResult<GetHotelsDto>>> GetPagedHotels([FromQuery] PagingParameters pagingParameters)
+        {
+            var pagedHotelsResult = await _hotelRepository.GetAllAsync<GetHotelsDto>(pagingParameters);
+
+            return Ok(pagedHotelsResult);
         }
 
         // GET: api/Hotels/5

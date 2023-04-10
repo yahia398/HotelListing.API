@@ -85,7 +85,7 @@ namespace HotelListing.API.Repository
                 TotalCount = totalSize,
                 Items = items,
                 PageNumber = queryParameters.PageNumber,
-                RecordNumber = (queryParameters.PageNumber - 1) * queryParameters.PageSize
+                RecordNumber = (queryParameters.PageNumber) * queryParameters.PageSize
 
             };
         }
