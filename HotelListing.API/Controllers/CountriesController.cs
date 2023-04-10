@@ -12,6 +12,7 @@ using System.Diagnostics.Metrics;
 using AutoMapper;
 using HotelListing.API.Repository.IRepository;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.OData.Query;
 
 namespace HotelListing.API.Controllers
 {
@@ -34,6 +35,7 @@ namespace HotelListing.API.Controllers
         [HttpGet("GetAll")]
         [Authorize]
         [MapToApiVersion("1.0")]
+        [EnableQuery]
         public async Task<ActionResult<IEnumerable<GetCountriesDto>>> GetCountries()
         {
             var countries = await _countryRepository.GetAllAsync();
