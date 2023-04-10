@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.OData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
@@ -35,7 +36,7 @@ namespace HotelListing.API
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
-            builder.Services.AddControllers();
+            
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
@@ -101,6 +102,11 @@ namespace HotelListing.API
             });
 
 
+
+            builder.Services.AddControllers().AddOData(options =>
+            {
+                options.OrderBy().Filter().Select();
+            });
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
