@@ -6,6 +6,7 @@ using HotelListing.API.Repository;
 using HotelListing.API.Repository.IRepository;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -49,7 +50,7 @@ namespace HotelListing.API
             builder.Services.AddApiVersioning(options =>
             {
                 options.AssumeDefaultVersionWhenUnspecified = true;
-                options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+                options.DefaultApiVersion = new ApiVersion(1, 0);
                 options.ReportApiVersions = true;
                 options.ApiVersionReader = ApiVersionReader.Combine(
                         new QueryStringApiVersionReader("api-version"),
@@ -60,7 +61,7 @@ namespace HotelListing.API
 
             builder.Services.AddVersionedApiExplorer(options =>
             {
-                options.GroupNameFormat = "v'VVV";
+                options.GroupNameFormat = "v{0}.{1}";
                 options.SubstituteApiVersionInUrl = true;
             });
 
@@ -99,13 +100,14 @@ namespace HotelListing.API
                 options.UseCaseSensitivePaths = true;
             });
 
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "V1"));
             }
 
             app.UseSerilogRequestLogging();

@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HotelListing.API.Controllers
 {
-    [Route("api/v{version:apiVersion}/users")]
+    
     [ApiController]
     [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly IAuthManager _authManager;
@@ -22,6 +23,7 @@ namespace HotelListing.API.Controllers
 
         [HttpPost]
         [Route("register")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -54,6 +56,7 @@ namespace HotelListing.API.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [Route("admin/register")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -86,6 +89,7 @@ namespace HotelListing.API.Controllers
 
         [HttpPost]
         [Route("login")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -114,6 +118,7 @@ namespace HotelListing.API.Controllers
 
         [HttpPost]
         [Route("refreshtoken")]
+        [MapToApiVersion("1.0")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
