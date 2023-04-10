@@ -1,6 +1,10 @@
-﻿using HotelListing.API.Data;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using HotelListing.API.Data;
+using HotelListing.API.Models;
 using HotelListing.API.Repository.IRepository;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using System.Linq.Expressions;
 
 namespace HotelListing.API.Repository
@@ -8,11 +12,13 @@ namespace HotelListing.API.Repository
     public class Repository<T> : IRepository<T> where T : class
     {
         private readonly AppDbContext _db;
+        private readonly IMapper _mapper;
         private readonly DbSet<T> _dbSet;
-        public Repository(AppDbContext db)
+        public Repository(AppDbContext db,IMapper mapper)
         {
             _db = db;
             _dbSet = _db.Set<T>();
+            _mapper = mapper;
         }
 
         public async Task<T> AddAsync(T entity)
@@ -66,5 +72,22 @@ namespace HotelListing.API.Repository
             return record != null;
         }
 
+        public async Task<PagedResult<TResult>> GetAllAsync<TResult>(PagingParameters queryParameters)
+        {
+            var totalSize = await _dbSet.CountAsync();
+            var items = await _dbSet.Skip((queryParameters.PageNumber - 1) * queryParameters.PageSize)
+                .Take(queryParameters.PageSize)
+                .ProjectTo<TResult>(_mapper.ConfigurationProvider)
+                .ToListAsync();
+
+            return new PagedResult<TResult>
+            {
+                TotalCount = totalSize,
+                Items = items,
+                PageNumber = queryParameters.PageNumber,
+                RecordNumber = (queryParameters.PageNumber - 1) * queryParameters.PageSize
+
+            };
+        }
     }
 }

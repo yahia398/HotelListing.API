@@ -15,9 +15,9 @@ using System.Data;
 
 namespace HotelListing.API.Controllers
 {
-    [Route("api/v{version:apiVersion}/hotels")]
     [ApiController]
     [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class HotelsController : ControllerBase
     {
         private readonly IHotelRepository _hotelRepository;
@@ -32,6 +32,7 @@ namespace HotelListing.API.Controllers
         // GET: api/Hotels
         [HttpGet]
         [Authorize]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<IEnumerable<GetHotelsDto>>> GetHotels()
         {
             var hotels = await _hotelRepository.GetAllAsync();
@@ -42,6 +43,7 @@ namespace HotelListing.API.Controllers
         // GET: api/Hotels/5
         [HttpGet("{id}")]
         [Authorize]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<HotelDto>> GetHotel(int id)
         {
             var hotel = await _hotelRepository.GetWithDetailsAsync(id);
@@ -60,6 +62,7 @@ namespace HotelListing.API.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
+        [MapToApiVersion("1.0")]
         public async Task<IActionResult> PutHotel(int id, UpdateHotelDto updateHotelDto)
         {
             if (id != updateHotelDto.Id)
@@ -100,6 +103,7 @@ namespace HotelListing.API.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "Admin")]
+        [MapToApiVersion("1.0")]
         public async Task<ActionResult<Hotel>> PostHotel(CreateHotelDto createHotelDto)
         {
             var hotel = _mapper.Map<Hotel>(createHotelDto);
@@ -111,6 +115,7 @@ namespace HotelListing.API.Controllers
         // DELETE: api/Hotels/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
+        [MapToApiVersion("1.0")]
         public async Task<IActionResult> DeleteHotel(int id)
         {
             var hotel = await _hotelRepository.GetAsync(id);
