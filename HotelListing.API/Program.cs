@@ -1,6 +1,6 @@
+using HotelListing.API.Configurations;
 using HotelListing.API.Contracts;
 using HotelListing.API.Data;
-using HotelListing.API.Data.Configs;
 using HotelListing.API.Models;
 using HotelListing.API.Repository;
 using HotelListing.API.Repository.IRepository;
