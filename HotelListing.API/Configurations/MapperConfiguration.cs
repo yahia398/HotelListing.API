@@ -4,7 +4,7 @@ using HotelListing.API.Models.ModelsDto.ApiUser;
 using HotelListing.API.Models.ModelsDto.Country;
 using HotelListing.API.Models.ModelsDto.Hotel;
 
-namespace HotelListing.API.Data.Configs
+namespace HotelListing.API.Configurations
 {
     public class MapperConfiguration : Profile
     {
