@@ -1,0 +1,31 @@
+﻿using AutoMapper;
+using HotelListing.API.Core.Repository.IRepository;
+using HotelListing.API.Data;
+using Microsoft.EntityFrameworkCore;
+
+namespace HotelListing.API.Core.Repository
+{
+    public class HotelRepository : Repository<Hotel>, IHotelRepository
+    {
+        private readonly AppDbContext _db;
+
+        public HotelRepository(AppDbContext db, IMapper mpper) : base(db, mpper)
+        {
+            _db = db;
+        }
+
+        public async Task<Hotel?> GetWithDetailsAsync(int id)
+        {
+            var hotel = await _db.Hotels
+                .Include(x => x.Country)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            return hotel;
+        }
+
+        public void Update(Hotel entity)
+        {
+            _db.Hotels.Update(entity);
+        }
+    }
+}
