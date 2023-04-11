@@ -110,9 +110,9 @@ namespace HotelListing.API.Controllers
         [HttpPost]
         [Authorize(Roles = "Admin")]
         [MapToApiVersion("1.0")]
-        public async Task<ActionResult<Country>> PostCountry(CreateCountryDto createCountry)
+        public async Task<ActionResult<CountryDto>> PostCountry(CreateCountryDto createCountry)
         {
-            var country = await _countryRepository.AddAsync<CreateCountryDto, Country>(createCountry);
+            var country = await _countryRepository.AddAsync<CreateCountryDto, CountryDto>(createCountry);
             await _countryRepository.SaveAsync();
 
             return CreatedAtAction("GetCountry", new { id = country.Id }, country);
