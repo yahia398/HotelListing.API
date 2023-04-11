@@ -9,27 +9,27 @@ using System.Linq.Expressions;
 
 namespace HotelListing.API.Core.Repository
 {
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
         private readonly AppDbContext _db;
         private readonly IMapper _mapper;
-        private readonly DbSet<T> _dbSet;
+        private readonly DbSet<TEntity> _dbSet;
         public Repository(AppDbContext db,IMapper mapper)
         {
             _db = db;
-            _dbSet = _db.Set<T>();
+            _dbSet = _db.Set<TEntity>();
             _mapper = mapper;
         }
 
-        public async Task<T> AddAsync(T entity)
+        public async Task<TEntity> AddAsync(TEntity entity)
         {
             await _dbSet.AddAsync(entity);
             return entity;
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate)
+        public async Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate)
         {
-            IQueryable<T> query = _dbSet;
+            IQueryable<TEntity> query = _dbSet;
 
             if (predicate != null)
             {
@@ -41,14 +41,14 @@ namespace HotelListing.API.Core.Repository
             return records;
         }
 
-        public async Task<T?> GetAsync(int id)
+        public async Task<TEntity?> GetAsync(int id)
         {
             var record = await _dbSet.FindAsync(id);
 
             return record;
         }
 
-        public void Remove(T entity)
+        public void Remove(TEntity entity)
         {
             _dbSet.Remove(entity);
         }
@@ -88,6 +88,47 @@ namespace HotelListing.API.Core.Repository
                 RecordNumber = (queryParameters.PageNumber) * queryParameters.PageSize
 
             };
+        }
+
+        public async Task<TResult> AddAsync<TSource, TResult>(TSource source)
+        {
+            var entity = _mapper.Map<TEntity>(source);
+            await _dbSet.AddAsync(entity);
+            return _mapper.Map<TResult>(entity);
+        }
+
+        public async Task<TResult?> GetAsync<TResult>(int id)
+        {
+            var record = await _dbSet.FindAsync(id);
+            if (record == null)
+            {
+                return default;
+            }
+            return _mapper.Map<TResult>(record);
+        }
+
+        public async Task<List<TResult>> GetAllAsync<TResult>(Expression<Func<TEntity, bool>>? predicate = null)
+        {
+            IQueryable<TEntity> query = _dbSet;
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            return await query.ProjectTo<TResult>(_mapper.ConfigurationProvider).ToListAsync();
+        }
+
+        public async Task UpdateAsync<TSource>(int id, TSource source)
+        {
+            var entity = await GetAsync(id);
+            if(entity == null)
+            {
+                throw new NullReferenceException();
+            }
+            _mapper.Map(source, entity);
+
+            _dbSet.Update(entity);
         }
     }
 }
