@@ -3,14 +3,18 @@ using System.Linq.Expressions;
 
 namespace HotelListing.API.Core.Repository.IRepository
 {
-    public interface IRepository<T> where T : class
+    public interface IRepository<TEntity> where TEntity : class
     {
-        Task<T> AddAsync(T entity);
-        Task<T?> GetAsync(int id);
-        Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? predicate = null);
+        Task<TEntity> AddAsync(TEntity entity);
+        Task<TResult> AddAsync<TSource, TResult>(TSource source);  // <---
+        Task<TEntity?> GetAsync(int id);
+        Task<TResult?> GetAsync<TResult>(int id);  // <---
+        Task<IEnumerable<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>>? predicate = null);
+        Task<List<TResult>> GetAllAsync<TResult>(Expression<Func<TEntity, bool>>? predicate = null);  // <---
         Task<PagedResult<TResult>> GetAllAsync<TResult>(PagingParameters queryParameters);
-        public void Remove(T entity);
+        public void Remove(TEntity entity);
         Task<bool> Exists(int id);
+        Task UpdateAsync<TSource>(int id, TSource source); // <---
         Task SaveAsync();
 
     }
