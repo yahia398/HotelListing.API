@@ -1,6 +1,6 @@
 # HotelListing.API
 
-This is an ASP.NET WebAPI project that provides a backend for a hotel listing application. It uses .NET Core 3.1 and Entity Framework Core to provide CRUD operations for hotel listings.
+This is an ASP.NET WebAPI project that provides a backend for a hotel listing application. It uses .NET Core 7 and Entity Framework Core to provide CRUD operations for hotel listings.
 
 ## Project Structure
 The project is divided into three main components:
